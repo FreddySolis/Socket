@@ -1,39 +1,46 @@
 var express = require('express')
 var aplicacion = express()
-var ipdinamic
-const net = require('net') 
-const os = require('os')
-var interface = os.networkInterfaces()
-const server = require('http').Server(aplicacion) // Es lo que instalamos, y va a funcionar como servidor
+const os = require('os');
+const net = require('net');
+const server = require('http').Server(aplicacion)
 const socket = require('socket.io')(server)
+const {StringDecoder} = require('string_decoder')
+const decoder = new  StringDecoder('utf8')
 
+var interface = os.networkInterfaces();
+var ipDinamic;
+for(var k in interface){
+    for(var k2 in interface[k]){
+        var address = interface[k][k2]
+        if(address.family == 'IPv4' && !address.internal ){
+            ipDinamic = address.address.toString();
+            console.log(ipDinamic);
+        }
+    }
+}
 
-var HOST = "alfredosolis173239.ddns.net"
-var PORT = "5001"
+var HOST = ipDinamic;
+
+var PORT = server.listen(process.env.PORT || 5001);
 
 
 var ser = net.createServer(function(so){
+ 
+    
+    console.log('Usuario Conectado Servidor 1:' + so.remoteAddress + ':' + so.remotePort)
+
+
+    
     so.on('data', function(data){
-        console.log('Usuario Nuevo')
+        var cent = data 
+        console.log(decoder.write(cent))
+
+        so.write("Bienvenido nuevo cliente al servidor 1.");
     })
 
-    so.on('data', function(data){
-
-        // console.log(bufferOriginal.toString(data)); ESTE NO SIRVE
-       
-         console.log(data)
-
-        
+    so.on('close',function(){
+        console.log('Usuario Desconectado Servidor 1.')
     })
-
-    so.on('close', function(){
-        console.log('Usuario Desconectado')
-    })
-
-
-});//Este va a crear nuestro servidor interno
+})
 
 ser.listen(PORT, HOST);
-
-console.log('Conexion');
-
